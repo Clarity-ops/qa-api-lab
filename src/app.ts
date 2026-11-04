@@ -1,19 +1,22 @@
 import express from "express";
 import { randomUUID } from "node:crypto";
 
-type Tier = "basic" | "silver" | "gold";
-interface Item {
+export type Tier = "basic" | "silver" | "gold";
+export type OrderStatus = "new" | "paid" | "shipped";
+
+export interface Item {
   sku: string;
   price: number;
   qty: number;
 }
-interface Order {
+export interface Order {
   id: string;
   ownerId: string;
   tier: Tier;
   items: Item[];
   subtotal: number;
   total: number;
+  status: OrderStatus;
   createdAt: string;
 }
 
@@ -78,6 +81,7 @@ export function createApp() {
       items,
       subtotal,
       total,
+      status: "new",
       createdAt: new Date().toISOString(),
     };
 
@@ -96,6 +100,32 @@ export function createApp() {
       return res.status(404).json({ code: "NOT_FOUND" });
     }
     res.json(toPublic(order));
+  });
+
+  app.patch("/orders/:id/status", (req, res) => {
+    const order = orders.get(req.params.id);
+    if (!order || order.ownerId !== res.locals.user.id) {
+      return res.status(404).json({ code: "NOT_FOUND" });
+    }
+
+    const nextStatus = req.body?.status;
+    const validStatuses: OrderStatus[] = ["new", "paid", "shipped"];
+    if (!validStatuses.includes(nextStatus)) {
+      return res.status(400).json({ code: "INVALID_STATUS" });
+    }
+
+    const allowedTransitions: Record<OrderStatus, OrderStatus[]> = {
+      new: ["paid"],
+      paid: ["shipped"],
+      shipped: [],
+    };
+
+    if (!allowedTransitions[order.status]?.includes(nextStatus)) {
+      return res.status(409).json({ code: "INVALID_STATUS_TRANSITION" });
+    }
+
+    order.status = nextStatus;
+    res.status(200).json(toPublic(order));
   });
 
   app.delete("/orders/:id", (req, res) => {

@@ -5,6 +5,7 @@ export const orderSchema = {
     tier: { type: "string", enum: ["basic", "silver", "gold"] },
     subtotal: { type: "number", minimum: 0 },
     total: { type: "number", minimum: 0 },
+    status: { type: "string", enum: ["new", "paid", "shipped"] },
     createdAt: { type: "string", format: "date-time" },
     items: {
       type: "array",
@@ -17,6 +18,6 @@ export const orderSchema = {
       },
     },
   },
-  required: ["id", "tier", "subtotal", "total", "createdAt", "items"],
+  required: ["id", "tier", "subtotal", "total", "status", "createdAt", "items"],
   additionalProperties: false,
 } as const;

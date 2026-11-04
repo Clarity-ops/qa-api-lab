@@ -6,7 +6,8 @@
   "scripts": {
     "start": "tsx src/server.ts",
     "test": "vitest run",
-    "test:postman": "newman run postman/orders.postman_collection.json --reporters cli junit --reporter-junit-export results/newman.xml"
+    "test:postman": "newman run postman/orders.postman_collection.json --reporters cli junit --reporter-junit-export results/newman.xml",
+    "test:postman:variant1": "newman run postman/orders_variant1.postman_collection.json --reporters cli junit --reporter-junit-export results/newman_variant1.xml"
   },
   "keywords": [],
   "author": "",
